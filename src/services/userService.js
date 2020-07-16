@@ -69,6 +69,32 @@ class UserService {
       return UserService.messages
     }
 
+    async sendMessageAsReplay(parent_message_id){
+      const messageText = 'some text -test_ 2'
+      const dialog = UserService.dialog;
+      const user = UserService.currentUser
+      const text = messageText.trim()
+      const date = Math.floor(Date.now() / 1000)
+      const recipient_id = dialog.type === 3 ? dialog.occupants_ids.find(elem => elem != user.id)
+        : dialog.xmpp_room_jid
+  
+      let msg = {
+        type: UserService.dialog.type === 3 ? "chat" : "groupchat",
+        body: text,
+        extension: {
+          save_to_history: 1,
+          dialog_id: dialog._id,
+          sender_id: user.id,
+          date_sent: date,
+          parent_message_id
+        }
+      }
+
+      ConnectyCube.chat.send(recipient_id, msg)
+
+      await this.getAllMessages()
+    }
+
     get messageUniqueId() {
       return ConnectyCube.chat.helpers.getBsonObjectId()
     }

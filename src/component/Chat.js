@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import SendMessageBlock from './chat-component/SendMessageBlock';
 import MessagesBlock from './chat-component/MessagesBlock';
 import UserService from '../services/userService';
 import Loader from '../component/loader/loader'
@@ -25,7 +24,6 @@ export default class Chat extends Component{
 
   render() {
     const { messages, isLoader } = this.state
-
     return (
       <div className="chat-wrap">
         {isLoader &&
@@ -33,8 +31,7 @@ export default class Chat extends Component{
             <Loader />
           </div>
         }
-        <MessagesBlock  messages={messages}/>
-        <SendMessageBlock uiSendMessages={this.uiSendMessages}/>
+        <MessagesBlock  messages={messages} uiSendMessages={this.uiSendMessages}/>
       </div>
     );
   };
