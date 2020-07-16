@@ -1,21 +1,51 @@
 import React, { Component, Fragment } from 'react';
 import UserService from '../../services/userService';
+import Modal from 'react-modal';
 import './chat.css'
+
+const customStyles = {
+    content : {
+      top                   : '50%',
+      left                  : '50%',
+      right                 : 'auto',
+      bottom                : 'auto',
+      marginRight           : '-50%',
+      transform             : 'translate(-50%, -50%)'
+    }
+  };
 
 class MessagesBlock extends Component {
 
     sortedMessages = [];
+
+    selected_parent_message_id = null;
+    
     state = {
-        message: ''
+        message: '',
+        isModal: false,
+        comment: ''
+    }
+
+    componentWillMount() {
+        Modal.setAppElement('body');
     }
 
     handleChange = (event) => {
         this.setState({message: event.target.value});
     }
+
+    handleChangeComment = (event) => {
+        this.setState({comment: event.target.value});
+    }
     
     handleSubmit = (event) => {
         event.preventDefault();
         this.sendMessage()
+    }
+
+    handleSubmitCommint = (event) => {
+        event.preventDefault();
+        this.sendMessageAsReplay()
     }
 
     sendMessage = () => {
@@ -31,8 +61,18 @@ class MessagesBlock extends Component {
         }) 
     }
 
-    sendMessageAsReplay = (parent_message_id) => {
-        // UserService.sendMessageAsReplay(parent_message_id)
+    sendMessageAsReplay = () => {
+        const { uiSendMessages } = this.props
+        this.setState({isModal:false, comment: ''})
+        uiSendMessages(true)
+        UserService.sendMessageAsReplay(this.state.comment, this.selected_parent_message_id).then(() => {
+            uiSendMessages(false)
+        })
+    }
+
+    openModal = (parent_message_id) => {
+        this.selected_parent_message_id = parent_message_id
+        this.setState({isModal: true})
     }
 
     sortMessages = () => {
@@ -57,9 +97,8 @@ class MessagesBlock extends Component {
     }
 
 
-    _renderMessage = (messages) => {
+    _renderMessage = () => {
         this.sortMessages()
-
         
         return this.sortedMessages.map(elem => {
             if(elem.comments.length){
@@ -69,7 +108,7 @@ class MessagesBlock extends Component {
                             <p>
                                 {elem.message}
                             </p>
-                            <span onClick={() => this.sendMessageAsReplay(elem._id)}>
+                            <span onClick={() => this.openModal(elem._id)}>
                                 replay
                             </span>
                         </div>
@@ -94,7 +133,7 @@ class MessagesBlock extends Component {
                         <p>
                             {elem.message}
                         </p>
-                        <span onClick={() => this.sendMessageAsReplay(elem._id)}>
+                        <span onClick={() => this.openModal(elem._id)}>
                             replay
                         </span>
                     </div>
@@ -104,15 +143,38 @@ class MessagesBlock extends Component {
         })  
     }
 
+    closeModal = () => {
+        this.selected_parent_message_id = null
+        this.setState({isModal: false})
+    }
+
 
     render() {
-        const { message } = this.state
+        const { message, isModal, comment } = this.state
         const { messages } = this.props
         return (
             <Fragment>
                 <div className="messages-block">
                     {this._renderMessage(messages)}
                 </div>
+
+                <Modal
+                    isOpen={isModal}
+                    onRequestClose={this.closeModal}
+                    style={customStyles}
+                    contentLabel="Example Modal"
+                    >
+                    <div className="send-as-comment">
+                        <button onClick={this.closeModal}>close</button>
+                    </div>
+                    <div>left comment</div>
+                    <form onSubmit={this.handleSubmitCommint}>
+                        <label>
+                            <input type="text" value={comment} onChange={this.handleChangeComment} />
+                        </label>
+                        <input type="submit" value="Send" />
+                    </form>
+                    </Modal>
 
                 <div className="send-message-block">
                     <form onSubmit={this.handleSubmit}>

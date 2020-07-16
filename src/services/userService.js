@@ -69,8 +69,7 @@ class UserService {
       return UserService.messages
     }
 
-    async sendMessageAsReplay(parent_message_id){
-      const messageText = 'some text -test_ 2'
+    async sendMessageAsReplay(messageText, parent_message_id){
       const dialog = UserService.dialog;
       const user = UserService.currentUser
       const text = messageText.trim()
