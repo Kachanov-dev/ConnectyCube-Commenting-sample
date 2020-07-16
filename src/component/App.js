@@ -6,17 +6,24 @@ import UserService from '../services/userService'
 
 
 export default class App extends Component{
-  componentDidMount(){
+  state = {
+    isFetchMessages: false
+  }
 
-    console.warn('componentDidMount');
-    UserService.init()
+  componentDidMount(){
+    UserService.init().then(() => {
+      this.setState({isFetchMessages: true})
+    })
   }
 
   render(){
+    const { isFetchMessages } = this.state
     return (
       <div className="App">
-        <Loader />
-        <Chat />
+        {isFetchMessages ?
+          <Chat /> :
+          <Loader /> 
+        }     
       </div>
     );
   }
